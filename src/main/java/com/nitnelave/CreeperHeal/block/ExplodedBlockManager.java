@@ -172,11 +172,17 @@ public class ExplodedBlockManager
             return;
 
         //process list is the list of blocks yet to be processed by creeperheal.
-        CHExplosionRecordEvent event = new CHExplosionRecordEvent(new ArrayList<Block>(originalBlockList), location, reason);
+        CHExplosionRecordEvent event = new CHExplosionRecordEvent(originalBlockList, location, reason);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return;
-        List<Block> processList = event.getBlocks();
+        List<Block> processList = new ArrayList(event.getBlocks());
+        for(Block b : event.getProtectedBlocks())
+        {
+            CreeperBlock cb = CreeperBlock.newBlock(b.getState());
+            ToReplaceList.addToReplace(cb);
+            cb.remove();
+        }
 
         CreeperExplosion cEx = null;
 

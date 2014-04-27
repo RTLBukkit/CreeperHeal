@@ -1,6 +1,7 @@
 package com.nitnelave.CreeperHeal.events;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -19,12 +20,16 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     private boolean cancelled = false;
     private static final HandlerList handlers = new HandlerList();
     private List<Block> healBlocks;
+    private List<Block> protectBlocks;
+    private final ImmutableList<Block> originalExplosion;
     private final Location location;
     private final ExplosionReason reason;
 
-    public CHExplosionRecordEvent(List<Block> healBlocks, Location location, ExplosionReason reason)
+    public CHExplosionRecordEvent(List<Block> blocks, Location location, ExplosionReason reason)
     {
-        this.healBlocks = healBlocks;
+        this.healBlocks = new ArrayList<Block>(blocks);
+        this.originalExplosion = ImmutableList.copyOf(blocks);
+        this.protectBlocks = new ArrayList<Block>();
         this.location = location;
         this.reason = reason;
     }
@@ -59,7 +64,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
      * Adding blocks to this list will mark them for deletion (if normally exploded
      * (config dependent)), then healed when appropriate.
      * 
-     * Recommended to use protectBlock and naturalizeBlock for readability.
+     * Recommended to use protectBlock, processBlock and explodeBlock for readability.
      * 
      * @return A mutable list of blocks that are currently listed for CreeperHeal
      * processing (not guaranteed to heal).
@@ -67,6 +72,19 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     public List<Block> getBlocks()
     {
         return healBlocks;
+    }
+
+    public List<Block> getProtectedBlocks()
+    {
+        return protectBlocks;
+    }
+
+    /**
+     * @return An immutable list containing the blocks in the original explosion.
+     */
+    public ImmutableList<Block> getOriginalExplosionBlocks()
+    {
+        return originalExplosion;
     }
 
     /**
@@ -92,13 +110,26 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     }
 
     /**
-     * Adds a block to the explosion, and adds it to the list for CreeperHeal to
-     * process.
+     * Marks a block to be protected by CreeperHeal.
+     **/
+    public void protectBlock(Block block)
+    {
+        if(healBlocks.contains(block))
+            healBlocks.remove(block);
+        if(!protectBlocks.contains(block))
+            protectBlocks.add(block);
+    }
+    
+    /**
+     * Adds the block to the list for CreeperHeal to process (not guaranteed to heal
+     * depends on config).
      */
-    public void healBlock(Block block)
+    public void processBlock(Block block)
     {
         if(!healBlocks.contains(block))
             healBlocks.add(block);
+        if(protectBlocks.contains(block))
+            protectBlocks.remove(block);
     }
 
     /** 
@@ -109,6 +140,8 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         if(healBlocks.contains(block))
             healBlocks.remove(block);
+        if(protectBlocks.contains(block))
+            protectBlocks.remove(block);
     }
 
     public enum ExplosionReason
