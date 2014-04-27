@@ -9,7 +9,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-
 /**
  * CHExplosionRecordEvent is fired as soon as CreeperHeal starts processing an
  * EntityExplodeEvent, listening allows you to manipulate the blocks which will
@@ -52,26 +51,26 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         return handlers;
     }
-    
+
     /** 
      * Now Deprecated due to ambiguity. 
      * Behavior has NOT been maintained, but now works as originally expected.
      **/
     @Deprecated
     public List<Block> getBlocks()
-    { 
+    {
         return healBlocks;
     }
-    
-    /** 
+
+    /**
      * Deprecated due to changed behavior. Now acts as it originally should have.
      **/
     @Deprecated
     public void setBlocks(List<Block> blockList)
-    { 
+    {
         healBlocks = blockList;
     }
-    
+
     /**
      * Blocks removed from this list will explode naturally if they are inside the
      * {@link getExplosionBlocks} {@.
@@ -88,7 +87,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         return healBlocks;
     }
-    
+
     /**
      * @return The location of the entity causing the explosion.
      */
@@ -101,7 +100,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         return reason;
     }
-    
+
     /**
      * Adds a block to the explosion, and adds it to the list for CreeperHeal to
      * process.
@@ -111,7 +110,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
         if(!healBlocks.contains(block))
             healBlocks.add(block);
     }
-    
+
     /** 
      * Prevents CreeperHeal processing the block, letting minecraft/bukkit/plugins
      * deal with the block as appropriate.
