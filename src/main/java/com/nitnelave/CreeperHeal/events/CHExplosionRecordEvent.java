@@ -52,11 +52,18 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
         return handlers;
     }
 
-    /** 
-     * Now Deprecated due to ambiguity. 
-     * Behavior has NOT been maintained, but now works as originally expected.
+    /**
+     * Blocks removed from this list will explode naturally if they were in the 
+     * explosion.
+     * 
+     * Adding blocks to this list will mark them for deletion (if normally exploded
+     * (config dependent)), then healed when appropriate.
+     * 
+     * Recommended to use protectBlock and naturalizeBlock for readability.
+     * 
+     * @return A mutable list of blocks that are currently listed for CreeperHeal
+     * processing (not guaranteed to heal).
      **/
-    @Deprecated
     public List<Block> getBlocks()
     {
         return healBlocks;
@@ -69,23 +76,6 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     public void setBlocks(List<Block> blockList)
     {
         healBlocks = blockList;
-    }
-
-    /**
-     * Blocks removed from this list will explode naturally if they are inside the
-     * {@link getExplosionBlocks} {@.
-     * 
-     * Adding blocks to this list will mark them for deletion (if normally exploded
-     * (config dependent)), then healed when appropriate.
-     * 
-     * Recommended to use protectBlock and naturalizeBlock for readability.
-     * 
-     * @return A mutable list of blocks that are currently listed for CreeperHeal
-     * processing (not guaranteed to heal).
-     **/
-    public List<Block> getHealBlocks()
-    {
-        return healBlocks;
     }
 
     /**
