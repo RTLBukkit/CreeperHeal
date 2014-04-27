@@ -21,14 +21,12 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     private static final HandlerList handlers = new HandlerList();
     private List<Block> healBlocks;
     private List<Block> protectBlocks;
-    private final ImmutableList<Block> originalExplosion;
     private final Location location;
     private final ExplosionReason reason;
 
     public CHExplosionRecordEvent(List<Block> blocks, Location location, ExplosionReason reason)
     {
         this.healBlocks = new ArrayList<Block>(blocks);
-        this.originalExplosion = ImmutableList.copyOf(blocks);
         this.protectBlocks = new ArrayList<Block>();
         this.location = location;
         this.reason = reason;
@@ -80,14 +78,6 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     }
 
     /**
-     * @return An immutable list containing the blocks in the original explosion.
-     */
-    public ImmutableList<Block> getOriginalExplosionBlocks()
-    {
-        return originalExplosion;
-    }
-
-    /**
      * Deprecated due to changed behavior. Now acts as it originally should have.
      **/
     @Deprecated
@@ -114,8 +104,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
      **/
     public void protectBlock(Block block)
     {
-        if(healBlocks.contains(block))
-            healBlocks.remove(block);
+        healBlocks.remove(block);
         if(!protectBlocks.contains(block))
             protectBlocks.add(block);
     }
@@ -128,8 +117,7 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         if(!healBlocks.contains(block))
             healBlocks.add(block);
-        if(protectBlocks.contains(block))
-            protectBlocks.remove(block);
+        protectBlocks.remove(block);
     }
 
     /** 
@@ -138,10 +126,8 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
      */
     public void explodeBlock(Block block)
     {
-        if(healBlocks.contains(block))
-            healBlocks.remove(block);
-        if(protectBlocks.contains(block))
-            protectBlocks.remove(block);
+        healBlocks.remove(block);
+        protectBlocks.remove(block);
     }
 
     public enum ExplosionReason
