@@ -1,5 +1,6 @@
 package com.nitnelave.CreeperHeal.events;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -8,24 +9,24 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-
 /**
- * CHExplosionRecordEvent is fired as soon as creeperheal starts processing an
- * EntityExplodeEvent.
+ * CHExplosionRecordEvent is fired as soon as CreeperHeal starts processing an
+ * EntityExplodeEvent, listening allows you to manipulate the blocks which will
+ * be or healed.
  **/
 public class CHExplosionRecordEvent extends Event implements Cancellable
 {
     private boolean cancelled = false;
     private static final HandlerList handlers = new HandlerList();
-    private List<Block> explosionBlocks;
     private List<Block> healBlocks;
+    private List<Block> protectBlocks;
     private final Location location;
     private final ExplosionReason reason;
 
-    public CHExplosionRecordEvent(List<Block> explosionBlocks, List<Block> healBlocks, Location location, ExplosionReason reason)
+    public CHExplosionRecordEvent(List<Block> blocks, Location location, ExplosionReason reason)
     {
-        this.explosionBlocks = explosionBlocks;
-        this.healBlocks = healBlocks;
+        this.healBlocks = new ArrayList<Block>(blocks);
+        this.protectBlocks = new ArrayList<Block>();
         this.location = location;
         this.reason = reason;
     }
@@ -54,46 +55,39 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     }
 
     /**
-     @return a mutable list of blocks from the original explosion
-     * removing blocks from this list will remove them from the explosion
-     * protecting them.
-     * 
-     * Adding blocks to this list will include them in the explosion.
-     * Recommended to use protectBlock and naturalizeBlock for readability.
-     * 
-     **/
-    public List<Block> getExplosionBlocks()
-    {
-        return explosionBlocks;
-    }
-
-    /** Now Deprecated due to ambiguity. 
-     * Behavior has NOT been maintained, but now works as original expected.
-     **/
-    @Deprecated
-    public List<Block> getBlocks()
-    { 
-        return healBlocks;
-    }
-    
-    /**
-     @return A mutable list of blocks that are currently listed for CreeperHeal
-     * processing (not guaranteed to heal).
-     * 
-     * Blocks removed from this list will explode naturally and filter through
-     * the explosion event.
+     * Blocks removed from this list will explode naturally if they were in the 
+     * explosion.
      * 
      * Adding blocks to this list will mark them for deletion (if normally exploded
      * (config dependent)), then healed when appropriate.
      * 
-     * Recommended to use protectBlock and naturalizeBlock for readability.
+     * Recommended to use protectBlock, processBlock and explodeBlock for readability.
      * 
+     * @return A mutable list of blocks that are currently listed for CreeperHeal
+     * processing (not guaranteed to heal).
      **/
-    public List<Block> getHealBlocks()
+    public List<Block> getBlocks()
     {
         return healBlocks;
     }
-    
+
+    public List<Block> getProtectedBlocks()
+    {
+        return protectBlocks;
+    }
+
+    /**
+     * Deprecated due to changed behavior. Now acts as it originally should have.
+     **/
+    @Deprecated
+    public void setBlocks(List<Block> blockList)
+    {
+        healBlocks = blockList;
+    }
+
+    /**
+     * @return The location of the entity causing the explosion.
+     */
     public Location getLocation()
     {
         return location;
@@ -103,23 +97,36 @@ public class CHExplosionRecordEvent extends Event implements Cancellable
     {
         return reason;
     }
-    
-    /** removes a block from the explosion protecting it, also prevents creeperheal
-     * processing the block.
+
+    /**
+     * Marks a block to be protected by CreeperHeal.
      **/
     public void protectBlock(Block block)
     {
-        explosionBlocks.remove(block);
         healBlocks.remove(block);
+        if(!protectBlocks.contains(block))
+            protectBlocks.add(block);
     }
     
-    /** prevents CreeperHeal processing the block, letting minecraft/bukkit/plugins
-     * deal with the block as appropriate.
-     * @param block 
+    /**
+     * Adds the block to the list for CreeperHeal to process (not guaranteed to heal
+     * depends on config).
      */
-    public void naturalizeBlock(Block block)
+    public void processBlock(Block block)
+    {
+        if(!healBlocks.contains(block))
+            healBlocks.add(block);
+        protectBlocks.remove(block);
+    }
+
+    /** 
+     * Prevents CreeperHeal processing the block, letting minecraft/bukkit/plugins
+     * deal with the block as appropriate.
+     */
+    public void explodeBlock(Block block)
     {
         healBlocks.remove(block);
+        protectBlocks.remove(block);
     }
 
     public enum ExplosionReason
